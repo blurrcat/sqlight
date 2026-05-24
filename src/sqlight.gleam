@@ -6,12 +6,6 @@ import gleam/string
 
 pub type Connection
 
-/// A statically linked SQLite extension that can be registered with SQLite.
-pub type StaticExtension {
-  /// The sqlite-vec extension.
-  SqliteVec
-}
-
 /// A value that can be sent to SQLite as one of the arguments to a
 /// parameterised SQL query.
 pub type Value
@@ -319,7 +313,7 @@ fn enable_load_extension_(a: Connection, b: Bool) -> Result(Nil, Error)
 
 @external(erlang, "sqlight_ffi", "auto_extension")
 @external(javascript, "./sqlight_ffi.js", "auto_extension")
-fn auto_extension_(a: StaticExtension) -> Result(Nil, Error)
+fn auto_extension_(a: String) -> Result(Nil, Error)
 
 /// Open a connection to a SQLite database.
 ///
@@ -376,9 +370,10 @@ pub fn enable_load_extension(
 /// into future database connections.
 ///
 /// This is useful when SQLite extensions are compiled into the SQLite library
-/// instead of loaded from a shared object at runtime.
-pub fn auto_extension(extension: StaticExtension) -> Result(Nil, Error) {
-  auto_extension_(extension)
+/// instead of loaded from a shared object at runtime. The entrypoint must be
+/// available as a symbol in the running VM, for example `"sqlite3_vec_init"`.
+pub fn auto_extension(entrypoint: String) -> Result(Nil, Error) {
+  auto_extension_(entrypoint)
 }
 
 /// Open a connection to a SQLite database and execute a function with it, then

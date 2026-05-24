@@ -163,9 +163,9 @@ pub fn enable_load_extension_test() {
 pub fn auto_extension_without_static_extension_test() {
   let assert Error(SqlightError(
     sqlight.GenericError,
-    "extension_not_compiled",
+    "extension_entrypoint_not_found",
     -1,
-  )) = sqlight.auto_extension(sqlight.SqliteVec)
+  )) = sqlight.auto_extension("missing_sqlite_extension_init")
 }
 
 pub fn exec_fail_test() {
