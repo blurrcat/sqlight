@@ -20,7 +20,7 @@ allow_write = ["tmp"]
 
 [dependencies]
 gleam_stdlib = ">= 0.51.0 and < 2.0.0"
-esqlite = "~> 0.8"
+esqlite = { git = "https://github.com/blurrcat/esqlite", ref = "33d6a5f1cdc507c0ffdd28e5f0a2a32766c2973c" }
 
 [dev-dependencies]
 gleeunit = "~> 1.0"

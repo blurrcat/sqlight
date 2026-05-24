@@ -11,6 +11,14 @@ export function close(connection) {
   return new Ok(undefined);
 }
 
+export function enable_load_extension(_connection, _enabled) {
+  return extension_api_error();
+}
+
+export function auto_extension(_extension) {
+  return extension_api_error();
+}
+
 export function coerce_value(value) {
   return value;
 }
@@ -52,6 +60,16 @@ function convert_error(error) {
       error_code_from_int(error.code),
       error.message,
       error.offset || -1
+    )
+  );
+}
+
+function extension_api_error() {
+  return new GlError(
+    new SqlightError(
+      error_code_from_int(1),
+      "SQLite extension APIs are not supported on the JavaScript target",
+      -1
     )
   );
 }

@@ -6,6 +6,12 @@ import gleam/string
 
 pub type Connection
 
+/// A statically linked SQLite extension that can be registered with SQLite.
+pub type StaticExtension {
+  /// The sqlite-vec extension.
+  SqliteVec
+}
+
 /// A value that can be sent to SQLite as one of the arguments to a
 /// parameterised SQL query.
 pub type Value
@@ -307,6 +313,14 @@ fn open_(a: String) -> Result(Connection, Error)
 @external(javascript, "./sqlight_ffi.js", "close")
 fn close_(a: Connection) -> Result(Nil, Error)
 
+@external(erlang, "sqlight_ffi", "enable_load_extension")
+@external(javascript, "./sqlight_ffi.js", "enable_load_extension")
+fn enable_load_extension_(a: Connection, b: Bool) -> Result(Nil, Error)
+
+@external(erlang, "sqlight_ffi", "auto_extension")
+@external(javascript, "./sqlight_ffi.js", "auto_extension")
+fn auto_extension_(a: StaticExtension) -> Result(Nil, Error)
+
 /// Open a connection to a SQLite database.
 ///
 /// URI filenames are supported by SQLite, making it possible to open read-only
@@ -345,6 +359,26 @@ pub fn open(path: String) -> Result(Connection, Error) {
 ///
 pub fn close(connection: Connection) -> Result(Nil, Error) {
   close_(connection)
+}
+
+/// Enable or disable runtime loading of SQLite extensions for a connection.
+///
+/// SQLite disables extension loading by default. Enable this before executing
+/// `load_extension(...)`, and disable it again after loading the extension.
+pub fn enable_load_extension(
+  connection: Connection,
+  enabled: Bool,
+) -> Result(Nil, Error) {
+  enable_load_extension_(connection, enabled)
+}
+
+/// Register a statically linked SQLite extension to be loaded automatically
+/// into future database connections.
+///
+/// This is useful when SQLite extensions are compiled into the SQLite library
+/// instead of loaded from a shared object at runtime.
+pub fn auto_extension(extension: StaticExtension) -> Result(Nil, Error) {
+  auto_extension_(extension)
 }
 
 /// Open a connection to a SQLite database and execute a function with it, then

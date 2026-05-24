@@ -152,6 +152,22 @@ pub fn exec_test() {
     )
 }
 
+@target(erlang)
+pub fn enable_load_extension_test() {
+  use conn <- connect()
+  let assert Ok(Nil) = sqlight.enable_load_extension(conn, True)
+  let assert Ok(Nil) = sqlight.enable_load_extension(conn, False)
+}
+
+@target(erlang)
+pub fn auto_extension_without_static_extension_test() {
+  let assert Error(SqlightError(
+    sqlight.GenericError,
+    "extension_not_compiled",
+    -1,
+  )) = sqlight.auto_extension(sqlight.SqliteVec)
+}
+
 pub fn exec_fail_test() {
   use conn <- connect()
   let assert Error(SqlightError(sqlight.GenericError, "incomplete input", -1)) =

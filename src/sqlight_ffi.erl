@@ -1,7 +1,8 @@
 -module(sqlight_ffi).
 
 -export([
-    status/0, query/3, exec/2, coerce_value/1, coerce_blob/1, null/0, open/1, close/1
+    status/0, query/3, exec/2, enable_load_extension/2, auto_extension/1,
+    coerce_value/1, coerce_blob/1, null/0, open/1, close/1
 ]).
 
 open(Name) ->
@@ -27,6 +28,20 @@ query(Sql, Connection, Arguments) when is_binary(Sql) ->
 exec(Sql, Connection) ->
     case esqlite3:exec(Connection, Sql) of
         {error, Code} -> to_error(Connection, Code);
+        ok -> {ok, nil}
+    end.
+
+enable_load_extension(Connection, Enabled) ->
+    case esqlite3:enable_load_extension(Connection, Enabled) of
+        {error, Code} when is_integer(Code) -> to_error(Connection, Code);
+        {error, Reason} -> extension_error(Reason);
+        ok -> {ok, nil}
+    end.
+
+auto_extension(Extension) ->
+    case esqlite3:auto_extension(Extension) of
+        {error, Code} when is_integer(Code) -> extension_error(Code);
+        {error, Reason} -> extension_error(Reason);
         ok -> {ok, nil}
     end.
 
@@ -60,4 +75,11 @@ null() -> undefined.
 to_error(Connection = {esqlite3, _}, Code) when is_integer(Code) ->
     #{errmsg := Message, error_offset := Offset} = esqlite3:error_info(Connection),
     Error = {sqlight_error, sqlight:error_code_from_int(Code), Message, Offset},
+    {error, Error}.
+
+extension_error(Code) when is_integer(Code) ->
+    Error = {sqlight_error, sqlight:error_code_from_int(Code), <<"SQLite extension API failed">>, -1},
+    {error, Error};
+extension_error(Reason) when is_atom(Reason) ->
+    Error = {sqlight_error, sqlight:error_code_from_int(1), atom_to_binary(Reason, utf8), -1},
     {error, Error}.
